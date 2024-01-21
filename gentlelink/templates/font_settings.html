@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>Font Settings</title>
+</head>
+<body>
+    <h1>Font Settings</h1>
+    <form method="post" action="{% url 'font_settings' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save</button>
+    </form>
+    <a href="{% url 'calendar' %}">Back to Calendar</a>
+</body>
+</html>

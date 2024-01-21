@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通知</title>
+    <style>
+        body {
+            margin: 0; 
+            padding: 0; 
+            text-align: center; 
+        }
+        header {
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #3498db;
+            color: #fff;
+            width: 100%;
+            margin: 0;
+        }
+
+        header #logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .content-container {
+            margin: 0 auto; 
+            max-width: 600px; 
+            margin-top: 50px;
+        }
+
+        .back-button, .complete-button {
+            display: inline-block; 
+            margin-right: 100px; 
+            margin-left: 50px;
+        }
+
+        .back-button {
+            background-color: #ccc;
+            color: #555;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+            margin-top: 100px;
+        }
+
+        .back-button:hover {
+            background-color: #999;
+            color: #000;
+            text-decoration: none;
+        }
+
+        .complete-button {
+            background-color: #4285f4;
+            color: #fff;
+            padding: 10px 60px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-decoration: none;
+            margin-top: 100px;
+            margin-right: 5px;
+        }
+
+        .complete-button:hover {
+            background-color: #0056b3;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-right: 0px;
+            margin-top: 100px;
+        }
+
+        .checkbox-label {
+            display: block;
+            margin-bottom: 10px; 
+        }
+
+        .checkbox-task {
+            font-size: 20px; 
+            margin-bottom: 10px; 
+        }
+
+        .completion-instruction {
+            margin-top: 20px; 
+            font-style: italic; 
+            color: #ff8c00; 
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div id="logo">Gentle Link</div>
+    </header>
+
+    <div class="content-container">
+        <h1>未完了タスク</h1>
+        <p class="completion-instruction">
+            タスクが完了したら☑にして、完了ボタンを押してください。
+        </p>
+        <form method="post" action="{% url 'notification' %}">
+            {% csrf_token %}
+            {% for task in tasks %}
+                <label class="checkbox-label">
+                    <input type="checkbox" name="task_id" value="{{ task.id }}" />
+                    <span class="checkbox-task">{{ task.title }}</span>
+                </label>
+            {% endfor %}
+
+            <div class="button-container">
+                <input type="submit" value="完了" class="complete-button" />
+                <a href="{% url 'home' %}" class="back-button">ホーム画面へ戻る</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

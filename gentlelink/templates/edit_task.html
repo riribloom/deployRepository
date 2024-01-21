@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gentle Link - タスク編集</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyCXlFjKQo8fR+75q4U5ZVcE9uWBEFzBbw"
+          crossorigin="anonymous">
+    <!-- Bootstrap Datepicker CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css"
+          integrity="sha384-k6Rqe4vhf3McydSf8o2JFntdHRh7d2CqqqM1cKlFclw5EEp3/ldIdkPVHCQ+gSmQ"
+          crossorigin="anonymous">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #3498db;
+            color: #fff;
+            width: 100%;
+        }
+
+        header #logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; 
+            flex-direction: column;
+            width: 100%;
+            max-width: 400px; 
+            margin: 0 auto;
+            margin-bottom: 20px;
+        }
+
+        form label {
+            text-align: left;
+            margin-bottom: 5px;
+            color: #555; 
+        }
+
+        input[type="text"],
+        textarea,
+        input[type="datetime-local"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+        }
+
+        button, .btn-secondary {
+            width: 100%; 
+            height: 35px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 5px; 
+            text-decoration: none; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+        }
+
+        button {
+            background-color: #4285f4; 
+            color: #fff;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #0056b3; 
+        }
+
+        .btn-secondary {
+            background-color: #ccc;
+            color: #333;
+            border: none;
+        }
+
+        .btn-secondary:hover {
+            background-color: #999;
+        }
+        
+        .btn-group {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between; 
+            width: 100%;
+            justify-content: flex-end; 
+        }
+
+        .btn-group button,
+        .btn-group .btn-secondary {
+            width: 47%; 
+            margin-right: 2%; 
+        }
+
+
+        .button-spacing {
+            margin-top: 10px;
+}
+    </style>
+</head>
+<body>
+
+<header>
+    <div id="logo">Gentle Link</div>
+</header>
+
+<div class="container">
+    <h1>タスク編集</h1>
+
+    <form method="post" action="{% url 'edit_task' task.id %}">
+        {% csrf_token %}
+        <label for="{{ form.title.id_for_label }}">タイトル</label>
+        {{ form.title }}
+        <label for="{{ form.description.id_for_label }}">説明</label>
+        {{ form.description }}
+        <label for="{{ form.deadline.id_for_label }}">締切日時</label>
+        <input type="datetime-local" class="form-control" name="{{ form.deadline.name }}" value="{{ form.deadline.value|default:'' | date:'Y-m-d' }}">
+        <label for="{{ form.creator_user.id_for_label }}">作成者</label>
+        {{ form.creator_user }}
+        <label for="{{ form.assignment_user.id_for_label }}">担当者</label>
+        {{ form.assignment_user }}
+        <label for="{{ form.complete_at.id_for_label }}">完了予定日時</label>
+        <input type="datetime-local" class="form-control" name="{{ form.complete_at.name }}" value="{{ form.complete_at.value|default:'' | date:'Y-m-d' }}">
+        <label for="{{ form.status.id_for_label }}">進捗状況</label>
+        <select class="form-control" name="{{ form.status.name }}">
+            <option value="未完了" {% if form.status.value == '未完了' %}selected{% endif %}>未完了</option>
+            <option value="完了" {% if form.status.value == '完了' %}selected{% endif %}>完了</option>
+        </select>
+        <div class="btn-group">
+            <button type="submit">保存</button>
+            <a href="{% url 'task_detail' task.id %}" class="btn btn-secondary">戻る</a>
+        </div>
+        {% if form.errors %}
+            <div class="alert alert-danger" role="alert">
+                <strong>エラー:</strong> フォームに誤りがあります。
+            </div>
+        {% endif %}
+    
+    </form>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.8/dist/umd/popper.min.js"
+        integrity="sha384-eMN0jrj2EKt5o1eSfJPh1kR8l+bq3QhNL3gqE+RpaqN9Q1cEX1V2C8e7ZpNF5tvx"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyCXlFjKQo8fR+75q4U5ZVcE9uWBEFzBbw"
+        crossorigin="anonymous"></script>
+<!-- Bootstrap Datepicker JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"
+        integrity="sha384-Jp0BCWs18E7w4dz8st/zcP8VABtkLJqHxF/g98tvypTIYJt1vLl1Bx5MjkO5Y/cD"
+        crossorigin="anonymous"></script>
+<script>
+    // Datepickerの初期化
+    $(document).ready(function(){
+        $('.datepicker').datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true
+        });
+    });
+</script>
+
+</body>
+</html>

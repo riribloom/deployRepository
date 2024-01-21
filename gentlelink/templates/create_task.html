@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gentle Link - タスク作成</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyCXlFjKQo8fR+75q4U5ZVcE9uWBEFzBbw"
+          crossorigin="anonymous">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #3498db;
+            color: #fff;
+            width: 100%;
+        }
+
+        header #logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; 
+            flex-direction: column;
+            width: 100%;
+            max-width: 400px; 
+            margin: 0 auto;
+            margin-bottom: 20px;
+        }
+
+        form label {
+            text-align: left;
+            margin-bottom: 5px;
+            color: #555; 
+        }
+
+        input[type="text"],
+        textarea,
+        input[type="datetime-local"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+        }
+
+        button {
+            width: 100%;
+            height: 35px;
+            background-color: #4285f4; 
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px; 
+            margin-bottom: 0px; 
+            text-decoration: none; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+        }
+
+        button:hover {
+            background-color: #0056b3; 
+        }
+
+        .btn-group {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            width: 100%; 
+        }
+
+        .btn-group button,
+        .btn-group a {
+            flex-grow: 1; 
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-secondary {
+            height: 35px;
+            flex-grow: 0; 
+            width: 400px; 
+            background-color: #ccc;
+            color: #333;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 0px;
+            
+        }
+
+        .btn-secondary:hover {
+            background-color: #999;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div id="logo">Gentle Link</div>
+</header>
+
+<div class="container">
+    <h1>タスク作成</h1>
+
+    <form method="post" action="{% url 'create_task' %}">
+        {% csrf_token %}
+        <label for="{{ form.title.id_for_label }}">タイトル</label>
+        {{ form.title }}
+        <label for="{{ form.description.id_for_label }}">説明</label>
+        {{ form.description }}
+        <label for="{{ form.deadline.id_for_label }}">締切日時</label>
+        {{ form.deadline }}
+        <label for="{{ form.creator_user.id_for_label }}">作成者</label>
+        {{ form.creator_user }}
+        <label for="{{ form.assignment_user.id_for_label }}">担当者</label>
+        {{ form.assignment_user }}
+        <label for="{{ form.complete_at.id_for_label }}">完了予定日時</label>
+        {{ form.complete_at }}
+        <label for="{{ form.status.id_for_label }}">進捗状況</label>
+        {{ form.status }}
+        <div class="btn-group">
+            <button type="submit">保存</button>
+            <a href="{% url 'home' %}" class="btn btn-secondary">ホーム画面へ戻る</a>
+        </div>
+    </form>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-b4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyCXlFjKQo8fR+75q4U5ZVcE9uWBEFzBbw"
+        crossorigin="anonymous"></script>
+
+<script>
+    // フォームがサブミットされたときにアラートを表示
+    $('form').submit(function () {
+        alert('保存が完了しました！');
+    });
+</script>
+
+</body>
+</html>

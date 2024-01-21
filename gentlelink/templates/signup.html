@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規ユーザー登録</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #3498db;
+            color: #fff;
+            width: 100%;
+            position: fixed;
+            top: 0;
+        }
+
+        header #logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .signup-container {
+            text-align: center;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin-top: 80px;
+        }
+
+        h1 {
+            color: #000000;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .required {
+            color: red;
+        }
+
+        .signup-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4285f4;
+            color: #fff;
+            text-decoration: none;
+            font-weight: normal;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .signup-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .alert {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 8px 30px;
+            background-color: #ccc;
+            color: #333;
+            text-decoration: none;
+            font-weight: normal;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #999;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div id="logo">Gentle Link</div>
+    </header>
+
+    <div class="signup-container">
+        <h1>新規ユーザー登録</h1>
+        <form method="post" action="{% url 'signup' %}">
+            {% csrf_token %}
+            <div class="input-group">
+                <label for="name">ユーザー名<span class="required">*</span></label>
+                <input type="text" id="name" name="name" placeholder="ユーザー名" required>
+            </div>
+            <div class="input-group">
+                <label for="email">メールアドレス<span class="required">*</span></label>
+                <input type="text" id="email" name="email" placeholder="メールアドレス" required>
+            </div>
+            <div class="input-group">
+                <label for="password">パスワード<span class="required">*</span></label>
+                <input type="password" id="password" name="password" placeholder="パスワード" required>
+            </div>
+            <div class="input-group">
+                <label for="confirm-password">パスワード（確認）<span class="required">*</span></label>
+                <input type="password" id="confirm-password" name="confirm_password" placeholder="パスワード（確認）" required>
+            </div>
+            {% if messages %}
+                <div class="alert">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <button type="submit" class="signup-btn">登録する</button>
+        </form>
+        <div class="back-btn-container">
+            <a class="back-btn" href="{% url 'welcome' %}">戻る</a>
+        </div>
+    </div>
+</body>
+</html>

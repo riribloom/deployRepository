@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>Calendar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.0/fullcalendar.min.js"></script>
+    
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/calendar.css' %}">
+    {% if calendar_color %}
+        
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: {{ calendar_color }};
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; 
+            min-height: 100vh;
+            font-family: '{{ user_settings.font_style }}', sans-serif;
+        }
+
+        header {
+            text-align: center;
+            padding: 24px;
+            box-sizing: border-box;
+            background-color: #3498db; 
+            color: #fff; 
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        #logo {
+            font-size: 26px;
+            font-weight: bold;
+        }
+
+        #calendar-container {
+            max-width: 700px;
+            text-align: center;
+            background-color: #fff;
+            padding: 80px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 10px; 
+            position: relative; 
+        }
+
+        #calendar {
+            width: 100%; 
+            margin: auto; 
+            background-color: #fff;
+            margin-bottom: 40px;
+        }
+
+        #back-to-home {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #ccc;
+            color: #333;
+            text-decoration: none;
+            font-weight: nomal;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        #back-to-home:hover {
+            background-color: #999;
+        }
+
+        h1 {
+            display: none;
+        }
+
+        body {
+            background-color: {{ calendar_color }};
+        }
+
+        .grey-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #ccc;
+            color: #333;
+            text-decoration: none;
+            font-weight: normal;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+            margin-right: 20px;
+        }
+
+       .grey-button:hover {
+            background-color: #999;
+        }
+
+        .event-title {
+           font-size: 16px;
+           font-weight: bold;
+           margin-bottom: 5px;
+        }
+
+        .event-time {
+           margin-top: 5px;
+           font-size: 12px;
+           color: #333;
+        }
+
+        #calendar-container {
+            margin-bottom: 20px; 
+        }
+
+        .notification-text {
+            position: absolute; 
+            top: 10px; 
+            left: 10px; 
+            font-size: 14px;
+            color: #333;
+            margin-left: 180px;
+        }
+    </style>
+    {% endif %}
+</head>
+<body>
+    <header>
+        <div id="logo">Gentle Link</div>
+    </header>
+
+    <div id="calendar-container">
+        <div class="notification-text">
+            カレンダーにはタスクの締切日時を表示しています。<br>前倒しでタスクが完了した場合は、通知画面の未完了タスクに☑をつけましょう！</br>
+        </div>
+        <h1>Calendar</h1>
+        <div id="calendar"></div>
+        <a class="grey-button" href="{% url 'settings' %}">カレンダーカラーの設定</a>
+        <a class="grey-button" href="{% url 'home' %}">ホーム画面へ戻る</a>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        $('#calendar').fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            events: {% autoescape off %}{{ event_data | safe }}{% endautoescape %},
+            dayClick: function(date, jsEvent, view) {
+                var formattedDate = date.format('YYYY-MM-DD');
+                window.location.href = '/gentlelink/memo_detail/create/?date=' + formattedDate;
+            },
+            eventRender: function (event, element) {
+                element.find('.fc-time').remove();
+
+                var eventStartTime = moment.utc(event.start).local().format('HH:mm');
+                var eventEndTime = event.end ? moment.utc(event.end).local().format('HH:mm') : null;
+
+                var timeHtml = '<div class="event-time">' + eventStartTime;
+                if (eventEndTime) {
+                    timeHtml += ' - ' + eventEndTime;
+                }
+                timeHtml += '</div>';
+
+                element.append(timeHtml);
+            }
+        });
+    });
+    </script>
+</body>
+</html>

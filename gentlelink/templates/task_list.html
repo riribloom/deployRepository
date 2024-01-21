@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>タスク一覧</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyCXlFjKQo8fR+75q4U5ZVcE9uWBEFzBbw"
+          crossorigin="anonymous">
+    <!-- Your custom CSS styles go here -->
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa; 
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #3498db; 
+            color: #fff; 
+            width: 100%;
+        }
+
+        #logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            text-align: center; 
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        a {
+            text-decoration: none;
+            color: #007bff; 
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 48%;
+            height: 35px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background-color: #4285f4;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #ccc;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background-color: #999;
+        }
+
+        .progress-bar {
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .progress-bar-incomplete {
+            width: 50%;
+            background-color: #ffc107; 
+            color: #000;
+        }
+
+        .progress-bar-complete {
+            width: 100%;
+            background-color: #28a745; 
+            color: #fff;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header>
+    <div id="logo">Gentle Link</div>
+</header>
+
+<div class="container">
+    <h1>タスク一覧</h1>
+
+    <!-- タスク一覧 -->
+    {% if tasks|length > 0 %}
+        <table>
+            <thead>
+                <tr>
+                    <th>タイトル</th>
+                    <th>締切日</th>
+                    <th>担当者</th>
+                    <th>進捗状況</th>
+                </tr>
+            </thead>
+        <tbody>
+            {% for task in tasks %}
+                <tr>
+                    <td><a href="{% url 'task_detail' task.id %}">{{ task.title }}</a></td>
+                    <td>{{ task.deadline }}</td>
+                    <td>{{ task.assignment_user }}</td>
+                    <td>
+                        {% if task.status == '完了' %}
+                            完了
+                        {% else %}
+                            未完了
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>タスクはまだありません。</p>
+{% endif %}
+
+    <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+        <button onclick="location.href='{% url 'create_task' %}'" class="btn btn-primary" style="border: none;">タスク作成</button>
+        <button onclick="location.href='{% url 'home' %}'" class="btn btn-secondary" style="border: none;">ホーム画面へ戻る</button>
+    </div>
+    <!-- 選択されたタスクの詳細表示 -->
+    {% if selected_task %}
+        <div>
+            <h2>{{ selected_task.title }}</h2>
+            <p>{{ selected_task.description }}</p>
+            
+        </div>
+    {% endif %}
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.8/dist/umd/popper.min.js"
+        integrity="sha384-eMN0jrj2EKt5o1eSfJPh1kR8l+bq3QhNL3gqE+RpaqN9Q1cEX1V2C8e7ZpNF5tvx"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyCXlFjKQo8fR+75q4U5ZVcE9uWBEFzBbw"
+        crossorigin="anonymous"></script>
+        
+<script>
+    function shareTask(taskId) {
+        // タスクを共有する処理を実行
+        fetch(`/share_task/${taskId}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('タスクが共有されました。');
+                    // ページを再読み込みして更新
+                    location.reload();
+                } else {
+                    alert('タスクの共有に失敗しました。');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('エラーが発生しました。');
+            });
+    }
+</script>
+
+</body>
+</html>

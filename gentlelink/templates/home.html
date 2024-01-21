@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gentle Link</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #3498db;
+            color: #fff;
+            width: 100%;
+        }
+
+        header #logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        main {
+            display: flex;
+            flex: 1;
+            width: 100%;
+        }
+
+        nav {
+            flex: 0 0 200px;
+            background-color: #f0f0f0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        nav ul li {
+            margin-bottom: 10px;
+        }
+
+        #content {
+            flex: 1;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        #info-area {
+            margin-top: 20px;
+            text-align: left; 
+            margin-left: 30%; 
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div id="logo">Gentle Link</div>
+</header>
+
+<main>
+    <nav>
+        <ul>
+            <li><a href="{% url 'task_search' %}?from_home=1">タスク検索</a></li>
+            <li><a href="{% url 'task_list' %}">タスク一覧</a></li>
+            <li><a href="{% url 'create_task' %}">タスク作成</a></li>
+            <li><a href="{% url 'calendar' %}">カレンダー表示</a></li>
+            <li><a href="{% url 'notification' %}">通知</a></li>
+            <li><a href="{% url 'user_settings' %}">ユーザー情報編集</a></li>
+            <li><a href="{% url 'couple_registration' %}">パートナーのアカウントと紐づける</a></li>
+            <li><a href="{% url 'logout' %}">ログアウト</a></li>
+        </ul>
+    </nav>
+
+    <div id="content">
+        <div id="info-area">
+            <h2>Welcome to Gentle Link</h2>
+<p>育児を支えるタスク管理アプリへようこそ。</p>
+<p>パートナーと協力して、楽しく子育てを進めましょう。</p>
+<p>新しいタスクを追加して、パートナーと共有しましょう。</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

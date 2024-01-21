@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>タスク詳細</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyCXlFjKQo8fR+75q4U5ZVcE9uWBEFzBbw"
+          crossorigin="anonymous">
+    <!-- Your custom CSS styles go here -->
+    <style>
+        body {
+            background-color: #f8f9fa; 
+            margin: 0;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #3498db; 
+            color: #fff; 
+            width: 100%;
+            margin: 0;
+        }
+
+        #logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            margin-top: 40px;
+            text-align: center; 
+        }
+
+        .back-btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #ccc; 
+            color: #333; 
+            text-decoration: none;
+            font-weight: nomal;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            border: none;
+        }
+
+        .back-btn:hover {
+            background-color: #999;
+        }
+
+        .edit-btn {
+        background-color: #007bff; 
+        color: #fff; 
+        border: none;
+        border-radius: 8px;
+        width: 80px;
+        }
+
+        .edit-btn:hover {
+            background-color: #0056b3; 
+        }
+
+        .delete-btn {
+        background-color: #dc3545; 
+        color: #fff; 
+        border: none;
+        border-radius: 8px;
+        width: 80px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        
+        table {
+            width: 50%;
+            margin: 0 auto; 
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+        }
+
+        .action-btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header>
+    <div id="logo">Gentle Link</div>
+</header>
+
+<div class="container">
+    <h1>タスク詳細</h1>
+    
+    <!-- タスク詳細表示 -->
+    <table>
+        <tr>
+            <th>タイトル</th>
+            <td>{{ task.title }}</td>
+        </tr>
+        <tr>
+            <th>説明</th>
+            <td>{{ task.description }}</td>
+        </tr>
+        <tr>
+            <th>締切日時</th>
+            <td>{{ task.deadline|date:"Y-m-d H:i" }}</td>
+        </tr>
+        <tr>
+            <th>作成者</th>
+            <td>{{ task.creator_user }}</td>
+        </tr>
+        <tr>
+            <th>担当者</th>
+            <td>{{ task.assignment_user }}</td>
+        </tr>
+        <tr>
+            <th>完了予定日時</th>
+            <td>{{ task.complete_at }}</td>
+        </tr>
+        <tr>
+            <th>進捗状況</th>
+            <td>{{ task.status }}</td>
+        </tr>
+    </table>
+
+    <div class="action-btn-container">
+        <button onclick="location.href='{% url 'edit_task' task.id %}'" class="btn btn-primary action-btn edit-btn">編集</button>
+
+        <button onclick="confirmDelete('{{ task.id }}')" class="btn btn-danger action-btn delete-btn">削除</button>
+
+        <button onclick="location.href='{% url 'task_list' %}'" class="btn btn-secondary action-btn back-btn">タスク一覧へ戻る</button>
+
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.8/dist/umd/popper.min.js"
+        integrity="sha384-eMN0jrj2EKt5o1eSfJPh1kR8l+bq3QhNL3gqE+RpaqN9Q1cEX1V2C8e7ZpNF5tvx"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyCXlFjKQo8fR+75q4U5ZVcE9uWBEFzBbw"
+        crossorigin="anonymous"></script>
+<!-- JavaScriptで削除確認のポップアップを表示 -->
+<script>
+    function confirmDelete(taskId) {
+        console.log('Task ID:', taskId);
+
+        if (confirm("本当に削除しますか？")) {
+            // 削除の処理をサーバーに対してリクエスト
+            fetch(`/delete-task/${taskId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),  // CSRFトークンの送信
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    // 削除が成功した場合の処理
+                    alert('タスクが削除されました。');
+                    // タスク一覧画面にリダイレクト
+                    window.location.href = '{% url 'task_list' %}';
+                } else {
+                    console.error('削除に失敗しました');
+                }
+            })
+            .catch(error => {
+                console.error('エラーが発生しました', error);
+            });
+        }
+    }
+
+    // CSRFトークンをCookieから取得する関数
+    function getCookie(name) {
+        var cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                // 名前が一致するクッキーを見つけたら値を取り出す
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+</body>
+</html>

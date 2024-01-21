@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>couple_registration</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+          integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyCXlFjKQo8fR+75q4U5ZVcE9uWBEFzBbw"
+          crossorigin="anonymous">
+<head>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            background-color: #3498db; 
+            color: #fff;
+            width: 100%;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .alert-box {
+            background-color: #90ee90;  
+            color: #fff; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-top: 100px;
+            margin-bottom: 50px; 
+            border: 2px solid #4caf50;
+        }
+
+        .alert-box h2 {
+            font-size: 20px; 
+            margin: 0; 
+        }
+
+        .back-button {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #333;
+            background-color: #ccc;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #999;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div id="logo" style="font-size: 24px; font-weight: bold;">Gentle Link</div>
+</header>
+
+<div class="container">
+    <div class="alert-box">
+        <h2>パートナーとのアカウントの紐づけが成功しました。</h2>
+    </div>
+    
+    <a href="{% url 'home' %}" class="back-button">ホームへ戻る</a>
+</div>
+
+</body>
+</html>
