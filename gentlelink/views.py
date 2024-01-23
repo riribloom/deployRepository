@@ -173,13 +173,20 @@ def task_search_view(request):
         search_keyword = form.cleaned_data['search_keyword']
         
         if search_keyword:
-            # タスクのタイトルまたは説明に検索ワードが含まれるものを取得
-            search_results = Tasks.objects.filter(
+            # ログインユーザーが紐づけたタスクを取得
+            shared_tasks = TaskShares.objects.filter(user=request.user).values_list('task', flat=True)
+
+            # ログインユーザーに紐づくタスクだけを取得
+            user_tasks = Tasks.objects.filter(
+                Q(creator_user=request.user) | Q(assignment_user=request.user) | Q(id__in=shared_tasks)
+            )
+
+            # タイトルまたは説明に検索ワードが含まれるものを取得
+            search_results = user_tasks.filter(
                 Q(title__icontains=search_keyword) | Q(description__icontains=search_keyword)
             )
 
     return render(request, 'task_search.html', {'form': form, 'search_results': search_results, 'from_home': from_home})
-
 @login_required
 def user_settings(request):
     if request.method == 'POST':

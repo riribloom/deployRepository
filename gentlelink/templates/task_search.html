@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
           integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8sh+WyCXlFjKQo8fR+75q4U5ZVcE9uWBEFzBbw"
           crossorigin="anonymous">
-    <!-- Your custom CSS styles go here -->
+    <!-- CSS styles go here -->
     <style>
         body {
             display: flex;
@@ -44,6 +44,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            background-color: #fff;
         }
 
         input[name="search_keyword"] {
@@ -136,7 +137,7 @@
         }
 
         .home-button {
-            margin-top: 20px; 
+            margin-top:250px; 
             margin-left: 10px;
             background-color: #ccc; 
             color: #333; 
@@ -163,6 +164,10 @@
 
 <div class="container">
     <h1>タスク検索</h1>
+    <div class="search-instructions">
+        <p>キーワードを入力したら虫眼鏡マーク🔎を<br>クリックしてタスクを検索しましょう！</br></p>
+    </div>
+
     <form method="get" action="{% url 'task_search' %}" class="search-form-003">
         <label>
             <input type="text" name="search_keyword" placeholder="キーワードを入力" required>
