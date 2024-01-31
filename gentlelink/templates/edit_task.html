@@ -131,35 +131,35 @@
     <h1>タスク編集</h1>
 
     <form method="post" action="{% url 'edit_task' task.id %}">
-        {% csrf_token %}
-        <label for="{{ form.title.id_for_label }}">タイトル</label>
-        {{ form.title }}
-        <label for="{{ form.description.id_for_label }}">説明</label>
-        {{ form.description }}
-        <label for="{{ form.deadline.id_for_label }}">締切日時</label>
-        <input type="datetime-local" class="form-control" name="{{ form.deadline.name }}" value="{{ form.deadline.value|default:'' | date:'Y-m-d' }}">
-        <label for="{{ form.creator_user.id_for_label }}">作成者</label>
-        {{ form.creator_user }}
-        <label for="{{ form.assignment_user.id_for_label }}">担当者</label>
-        {{ form.assignment_user }}
-        <label for="{{ form.complete_at.id_for_label }}">完了予定日時</label>
-        <input type="datetime-local" class="form-control" name="{{ form.complete_at.name }}" value="{{ form.complete_at.value|default:'' | date:'Y-m-d' }}">
-        <label for="{{ form.status.id_for_label }}">進捗状況</label>
-        <select class="form-control" name="{{ form.status.name }}">
-            <option value="未完了" {% if form.status.value == '未完了' %}selected{% endif %}>未完了</option>
-            <option value="完了" {% if form.status.value == '完了' %}selected{% endif %}>完了</option>
-        </select>
-        <div class="btn-group">
-            <button type="submit">保存</button>
-            <a href="{% url 'task_detail' task.id %}" class="btn btn-secondary">戻る</a>
+    {% csrf_token %}
+    <label for="{{ form.title.id_for_label }}">タイトル</label>
+    {{ form.title }}
+    <label for="{{ form.description.id_for_label }}">説明</label>
+    {{ form.description }}
+    <label for="{{ form.deadline.id_for_label }}">締切日時</label>
+    <input type="datetime-local" class="form-control" name="{{ form.deadline.name }}" value="{{ form.deadline.value|default:task.deadline|date:'Y-m-d\TH:i' }}">
+    <label for="{{ form.creator_user.id_for_label }}">作成者</label>
+    {{ form.creator_user }}
+    <label for="{{ form.assignment_user.id_for_label }}">担当者</label>
+    {{ form.assignment_user }}
+    <label for="{{ form.complete_at.id_for_label }}">完了予定日時</label>
+    <input type="datetime-local" class="form-control" name="{{ form.complete_at.name }}" value="{{ form.complete_at.value|default:task.complete_at|date:'Y-m-d\TH:i' }}">
+    <label for="{{ form.status.id_for_label }}">進捗状況</label>
+<select class="form-control" name="{{ form.status.name }}">
+    <option value="未完了" {% if form.status.value == '未完了' %}selected{% endif %}>未完了</option>
+    <option value="完了" {% if form.status.value == '完了' %}selected{% endif %}>完了</option>
+</select>
+
+    <div class="btn-group">
+        <button type="submit">保存</button>
+        <a href="{% url 'task_detail' task.id %}" class="btn btn-secondary">戻る</a>
+    </div>
+    {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+            <strong>エラー:</strong> フォームに誤りがあります。
         </div>
-        {% if form.errors %}
-            <div class="alert alert-danger" role="alert">
-                <strong>エラー:</strong> フォームに誤りがあります。
-            </div>
-        {% endif %}
-    
-    </form>
+    {% endif %}
+</form>
 </div>
 
 <!-- Bootstrap JS and dependencies -->

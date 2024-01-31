@@ -140,14 +140,14 @@
         <a class="grey-button" href="{% url 'settings' %}">カレンダーカラーの設定</a>
         <a class="grey-button" href="{% url 'home' %}">ホーム画面へ戻る</a>
     </div>
-
+    
     <script>
     $(document).ready(function() {
         $('#calendar').fullCalendar({
             header: {
                 left: 'prev,next today',
                 center: 'title',
-                right: 'month,agendaWeek,agendaDay'
+                right: 'prevYear, nextYear'
             },
             events: {% autoescape off %}{{ event_data | safe }}{% endautoescape %},
             dayClick: function(date, jsEvent, view) {

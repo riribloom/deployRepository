@@ -119,6 +119,12 @@
         .back-btn:hover {
             background-color: #999;
         }
+
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -133,25 +139,54 @@
             <div class="input-group">
                 <label for="name">ユーザー名<span class="required">*</span></label>
                 <input type="text" id="name" name="name" placeholder="ユーザー名" required>
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if 'ユーザー名' in message %}
+                            <p class="error">{{ message }}</p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             </div>
             <div class="input-group">
                 <label for="email">メールアドレス<span class="required">*</span></label>
                 <input type="text" id="email" name="email" placeholder="メールアドレス" required>
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if 'メールアドレス' in message %}
+                            <p class="error">{{ message }}</p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             </div>
             <div class="input-group">
                 <label for="password">パスワード<span class="required">*</span></label>
                 <input type="password" id="password" name="password" placeholder="パスワード" required>
+                {% if messages %}
+                    {% for message in messages %}
+                        {% if 'パスワード' in message %}
+                            <p class="error">{{ message }}</p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
             </div>
             <div class="input-group">
                 <label for="confirm-password">パスワード（確認）<span class="required">*</span></label>
                 <input type="password" id="confirm-password" name="confirm_password" placeholder="パスワード（確認）" required>
             </div>
             {% if messages %}
-                <div class="alert">
-                    {% for message in messages %}
-                        {{ message }}
-                    {% endfor %}
-                </div>
+                {% for message in messages %}
+                    {% if 'ユーザー名' in message or 'メールアドレス' in message or 'パスワード' in message %}
+                        <p class="error">{{ message }}</p>
+                    {% endif %}
+                {% endfor %}
+                <!-- 新規ユーザー登録が成功した場合にメッセージを表示 -->
+                {% for message in messages %}
+                    {% if '新規ユーザー登録が完了しました。' in message %}
+                        <div class="alert success">
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
             {% endif %}
             <button type="submit" class="signup-btn">登録する</button>
         </form>

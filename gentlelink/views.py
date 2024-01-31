@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.utils import timezone
+import re
 
 def welcome_view(request):
     return render(request, 'welcome.html')
@@ -35,22 +36,46 @@ def login_view(request):
 
 def signup_view(request):
     if request.method == 'POST':
-        
         name = request.POST.get('name')
         email = request.POST.get('email')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirm_password')
 
-        if password == confirm_password:
+        # ユーザー名のバリデーション
+        if not name or name.isspace():
+            messages.error(request, 'ユーザー名はスペースを含まずに入力してください。')
+            return render(request, 'signup.html')
 
-            user = User.objects.create_user(username=name, email=email, password=password)
-            
-            login(request, user)
-            
-            return redirect('login')
-    
+        # 既に同じユーザー名が存在するか確認
+        if User.objects.filter(username=name).exists():
+            messages.error(request, 'このユーザー名はすでに使用されています。別のユーザー名を選択してください。')
+            return render(request, 'signup.html')
+
+        # メールアドレスのバリデーション
+        email_pattern = re.compile(r'^[\w\.-]+@[\w\.-]+\.\w+$')
+        if not email or not email_pattern.match(email):
+            messages.error(request, '有効なメールアドレスを入力してください。')
+            return render(request, 'signup.html')
+
+        # パスワードのバリデーション
+        if not password or len(password) < 8 or ' ' in password:
+            messages.error(request, 'パスワードはスペースを含まずに8文字以上で入力してください。')
+            return render(request, 'signup.html')
+
+        if password != confirm_password:
+            messages.error(request, 'パスワードと確認用パスワードが一致しません。')
+            return render(request, 'signup.html')
+
+        # ユーザー登録
+        user = User.objects.create_user(username=name, email=email, password=password)
+        login(request, user)
+        
+        # 登録完了メッセージを追加
+        messages.success(request, '新規ユーザー登録が完了しました。')
+        
+        return redirect('login')
+
     return render(request, 'signup.html')
-
 
 @login_required
 def home_view(request):
@@ -86,11 +111,22 @@ def share_task_with_partner(request, task_id):
 
 @login_required
 def task_list_view(request, task_id=None):
-    shared_tasks = TaskShares.objects.filter(user=request.user).values_list('task', flat=True)
-    # 締切日が若いものから順に表示する
-    tasks = Tasks.objects.filter(
-        Q(creator_user=request.user) | Q(assignment_user=request.user) | Q(id__in=shared_tasks)
-    ).order_by('deadline')
+    # カップルユーザーを取得
+    couple_user = CoupleUser.objects.filter(Q(husband=request.user) | Q(wife=request.user)).first()
+
+    if couple_user:
+        # カップルユーザーが存在する場合、相手のユーザーを取得
+        partner = couple_user.husband if request.user == couple_user.wife else couple_user.wife
+
+        # TaskSharesに自動的に共有されたタスクを取得
+        shared_tasks = TaskShares.objects.filter(user=partner).values_list('task', flat=True)
+
+        # カップルユーザーが存在する場合、共有されたタスクおよびカップルユーザーが作成したタスクを表示
+        tasks = Tasks.objects.filter(Q(id__in=shared_tasks) | Q(creator_user=partner)).order_by('deadline')
+
+    else:
+        # 紐づけられたユーザーが存在しない場合、ログインユーザーのタスクのみ表示
+        tasks = Tasks.objects.filter(Q(creator_user=request.user) | Q(assignment_user=request.user)).order_by('deadline')
 
     selected_task = None
 
@@ -152,16 +188,23 @@ def task_detail_view(request, task_id):
 @login_required
 def edit_task_view(request, task_id):
     task = get_object_or_404(Tasks, id=task_id)
-    
+
     if request.method == 'POST':
         form = EditTaskForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
             return redirect('task_detail', task_id)
     else:
-        form = EditTaskForm(instance=task)
+        # GET リクエスト時にデータベースの値をフォームに設定
+        # 紐づけられたユーザーとログインユーザーを取得
+        linked_user = task.assignment_user
+        login_user = request.user
+
+        # フォームに紐づけられたユーザーとログインユーザーを渡す
+        form = EditTaskForm(instance=task, linked_user=linked_user, login_user=login_user)
 
     return render(request, 'edit_task.html', {'form': form, 'task': task})
+
 
 @login_required
 def task_search_view(request):
@@ -323,21 +366,37 @@ def notification_view(request):
 
     # ログインユーザーが作成または紐づけた未完了タスクを取得
     incomplete_tasks = Tasks.objects.filter(
-        (Q(creator_user=request.user) | Q(assignment_user=request.user) | Q(id__in=shared_tasks)) &
-        Q(complete_flg=False)
-    ).order_by('deadline', 'created_at')  # 締切日が若いものから順に、同じ場合は作成日が若いものから順に
+    (Q(creator_user=request.user) | Q(assignment_user=request.user) | Q(id__in=shared_tasks)) &
+    Q(complete_flg=False) & Q(status='未完了')
+).order_by('deadline', 'created_at')
+  # 締切日が若いものから順に、同じ場合は作成日が若いものから順に
 
     if request.method == 'POST':
-        
         completed_task_ids = request.POST.getlist('task_id')
         # 選択されたタスクを完了済みに設定
-        Tasks.objects.filter(id__in=completed_task_ids).update(complete_flg=True, complete_at=timezone.now())
+        Tasks.objects.filter(id__in=completed_task_ids).update(status='完了', complete_at=timezone.now())
         return redirect('notification')
+
 
     return render(request, 'notification.html', {'tasks': incomplete_tasks})
 
+
 @login_required
 def couple_registration_view(request):
+    couple_user = None  # couple_user を try ブロックの外で初期化
+
+    try:
+        couple_user = CoupleUser.objects.get(Q(husband=request.user) | Q(wife=request.user))
+        initial_data = {
+            'husband_username': couple_user.husband.username,
+            'wife_username': couple_user.wife.username,
+        }
+        form = CoupleRegistrationForm(initial=initial_data)
+        registration_disabled = True  # 紐づけが既に存在する場合は登録ボタンを無効にする
+    except CoupleUser.DoesNotExist:
+        form = CoupleRegistrationForm()
+        registration_disabled = False
+
     if request.method == 'POST':
         form = CoupleRegistrationForm(request.POST)
         if form.is_valid():
@@ -347,14 +406,31 @@ def couple_registration_view(request):
             husband_user = User.objects.get(username=husband_username)
             wife_user = User.objects.get(username=wife_username)
 
+            if couple_user:  # couple_user が存在する場合にのみ削除処理を実行
+                # 紐づけを解除する処理を追加
+                couple_user.delete()
+                return redirect('couple_registration_view')
+
             # CoupleUser モデルに夫婦情報を保存
             couple_user = CoupleUser.objects.create(husband=husband_user, wife=wife_user)
             
-            return redirect('couple_registration_success')  
-    else:
-        form = CoupleRegistrationForm()
+            return redirect('couple_registration_success')
 
-    return render(request, 'couple_registration.html', {'form': form})
+    return render(request, 'couple_registration.html', {'form': form, 'registration_disabled': registration_disabled})
+
+
+@login_required
+def unlink_couple(request):
+    # 紐づけを解除する処理を追加
+    couple_user = CoupleUser.objects.get(Q(husband=request.user) | Q(wife=request.user))
+
+    # CoupleUser レコードを削除
+    couple_user.delete()
+
+    # 関連する TaskShares レコードも削除
+    TaskShares.objects.filter(user=request.user).delete()
+
+    return redirect('couple_registration')
 
 @login_required
 def couple_registration_success_view(request):
@@ -368,7 +444,7 @@ def settings_view(request):
         user_settings.calendar_color = calendar_color
         user_settings.save()
         return redirect('calendar') 
-    else:
+    else: 
         # POST リクエスト以外の場合は通常の settings.html を表示
         return render(request, 'settings.html')
 

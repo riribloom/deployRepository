@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from .views import delete_task_view, task_detail_view, edit_task_view, task_search_view, user_settings, calendar_view
-from .views import notification_view, password_change_view, MemoDetailView, EditMemoView, share_task_with_partner, task_list_view, couple_registration_view, couple_registration_success_view, settings_view
+from .views import notification_view, password_change_view, MemoDetailView, EditMemoView, share_task_with_partner, task_list_view, couple_registration_view, couple_registration_success_view, unlink_couple, settings_view
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -29,8 +29,9 @@ urlpatterns = [
     path('couple_registration/', couple_registration_view, name='couple_registration'),
     path('couple_registration_success/', couple_registration_success_view, name='couple_registration_success'),
     path('settings/', settings_view, name='settings'),
+    path('unlink_couple/', unlink_couple, name='unlink_couple'),
 ]
 
 # 開発環境でのみ静的ファイルを提供する設定
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) 

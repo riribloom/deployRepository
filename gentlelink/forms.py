@@ -4,6 +4,8 @@ from django.contrib.auth.forms import UserChangeForm,  PasswordChangeForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import Tasks, Memos, UserSettings, CoupleUser
+from django.utils import timezone
+
 
 class CreateTaskForm(forms.Form):
     title = forms.CharField(label='タイトル', max_length=100, widget=forms.TextInput(attrs={'class': 'form-control'}))
@@ -21,19 +23,22 @@ class CreateTaskForm(forms.Form):
     status = forms.ChoiceField(label='進捗状況', choices=STATUS_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}))
     
 
-    def clean(self):
-        cleaned_data = super().clean()
+    def clean_deadline(self):
+        deadline = self.cleaned_data.get('deadline')
 
-        title = cleaned_data.get('title')
-        description = cleaned_data.get('description')
-        deadline = cleaned_data.get('deadline')
-        creator_user = cleaned_data.get('creator_user')
-        assignment_user = cleaned_data.get('assignment_user')
-        status = cleaned_data.get('status')
+        if deadline and deadline < timezone.now():
+            raise ValidationError("締切日は過去の日付にすることはできません。")
 
-        if not (title and description and deadline and creator_user and assignment_user and status):
-            raise ValidationError("すべてのフィールドに入力してください.")
+        return deadline
 
+    def clean_complete_at(self):
+        complete_at = self.cleaned_data.get('complete_at')
+
+        if complete_at and complete_at < timezone.now():
+            raise ValidationError("完了予定日は過去の日付にすることはできません。")
+
+        return complete_at
+    
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)  # ユーザー情報を取得
         super(CreateTaskForm, self).__init__(*args, **kwargs)
@@ -53,14 +58,42 @@ class EditTaskForm(forms.ModelForm):
     deadline = forms.DateTimeField(label='締切', widget=forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
     complete_at = forms.DateTimeField(label='完了予定日時', widget=forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
 
+    def __init__(self, *args, **kwargs):
+        linked_user = kwargs.pop('linked_user', None)
+        login_user = kwargs.pop('login_user', None)
+
+        super(EditTaskForm, self).__init__(*args, **kwargs)
+
+        # creator_userのクエリセットをログインユーザーのみに制限
+        self.fields['creator_user'].queryset = User.objects.filter(id=self.instance.creator_user.id)
+
+        # assignment_userのクエリセットをログインユーザーと紐づいたユーザーのみに制限
+        assignment_user_queryset = User.objects.filter(
+            id__in=[self.instance.creator_user.id, self.instance.assignment_user.id]
+        )
+
+        # フォームに紐づけられたユーザーを追加
+        if linked_user and linked_user != self.instance.creator_user:
+            assignment_user_queryset |= User.objects.filter(id=linked_user.id)
+
+        # ログインユーザーもクエリセットに追加
+        if login_user and login_user != self.instance.creator_user and login_user != linked_user:
+            assignment_user_queryset |= User.objects.filter(id=login_user.id)
+
+        # ログインユーザーが担当者である場合、紐づけられたユーザーも選択肢に追加
+        if self.instance.assignment_user == login_user:
+            if linked_user and linked_user != self.instance.creator_user and linked_user != login_user:
+                assignment_user_queryset |= User.objects.filter(id=linked_user.id)
+
+        self.fields['assignment_user'].queryset = assignment_user_queryset
     class Meta:
         model = Tasks
-        fields = ['title', 'description', 'deadline', 'creator_user', 'assignment_user', 'complete_at', 'complete_flg']
+        fields = ['title', 'description', 'deadline', 'creator_user', 'assignment_user', 'complete_at', 'status']
         widgets = {
             'deadline': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'complete_at': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
-        }       
-        
+        }
+
 class TaskSearchForm(forms.Form):
     search_keyword = forms.CharField(label='検索ワード', required=False)       
 
@@ -68,7 +101,6 @@ class MemoForm(forms.ModelForm):
     class Meta:
         model = Memos
         fields = ['content']
-        
         
 class UserSettingsForm(UserChangeForm):
     class Meta:
@@ -111,7 +143,6 @@ class CoupleRegistrationForm(forms.Form):
             raise forms.ValidationError('選択されたユーザーは既に夫婦として登録されています。')
 
         return cleaned_data
-    
 class EditMemoForm(forms.ModelForm):
     class Meta:
         model = Memos

@@ -63,11 +63,28 @@
             padding: 10px 20px;
             border-radius: 5px;
             cursor: pointer;
+            margin-top: 50px;
         }
 
         button[type="submit"]:hover {
             background-color: #0056b3;
         }
+
+        .delete-btn {
+        background-color: #dc3545; 
+        color: #fff; 
+        border: none;
+        border-radius: 5px;
+        width: 135px; /* 幅を調整 */
+        height: 40px; /* 高さを追加 */
+        margin-top: 50px;
+        font-size: 15px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        
     </style>
 </head>
 <body>
@@ -77,11 +94,25 @@
 <div class="container">
     <h2>アカウントの紐づけ</h2>
     <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">登録</button>
-    </form>
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% if registration_disabled %}
+        <button type="button" onclick="confirmUnlink()" class="delete-btn">紐づけ解除</button>
+    {% else %}   
+        <button type="submit" style="background-color: #4285f4; color: #fff;">登録</button>
+    {% endif %}
+</form>
 
+<script>
+    function confirmUnlink() {
+        var confirmation = confirm("紐づけを解除しますか？");
+        if (confirmation) {
+            // 紐づけ解除のための処理をここに追加
+            window.location.href = "{% url 'unlink_couple' %}";  // 例: 紐づけ解除用のURLにリダイレクト
+        }
+    }
+</script>
+   
     <a href="{% url 'home' %}" class="back-button">ホームへ戻る</a>
 </div>
 
