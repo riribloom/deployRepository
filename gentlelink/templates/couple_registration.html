@@ -95,12 +95,23 @@
     <h2>アカウントの紐づけ</h2>
     <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    
     {% if registration_disabled %}
-        <button type="button" onclick="confirmUnlink()" class="delete-btn">紐づけ解除</button>
-    {% else %}   
-        <button type="submit" style="background-color: #4285f4; color: #fff;">登録</button>
-    {% endif %}
+    <label for="husband-username">パパのユーザー名:</label>
+    <p>{{ form.husband_username.value }}</p>
+    <label for="wife-username">ママのユーザー名:</label>
+    <p>{{ form.wife_username.value }}</p>
+    <button type="button" onclick="confirmUnlink()" class="delete-btn">紐づけ解除</button>
+{% else %}   
+    <label for="{{ form.husband_username.id_for_label }}">パパのユーザー名:</label>
+    <p>{{ form.husband_username }}</p>
+    <p><label for="{{ form.wife_username.id_for_label }}">ママのユーザー名:</label></p>
+    {{ form.wife_username }}
+    <br><button type="submit" style="background-color: #4285f4; color: #fff;">登録</button></br>
+{% endif %}
+
+
+
 </form>
 
 <script>

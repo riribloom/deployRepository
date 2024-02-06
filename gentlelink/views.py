@@ -171,6 +171,7 @@ def create_task_view(request):
 
     return render(request, 'create_task.html', {'form': form})
 
+
 @login_required
 def delete_task_view(request, task_id):
     try:
@@ -388,9 +389,10 @@ def couple_registration_view(request):
     try:
         couple_user = CoupleUser.objects.get(Q(husband=request.user) | Q(wife=request.user))
         initial_data = {
-            'husband_username': couple_user.husband.username,
-            'wife_username': couple_user.wife.username,
+            'husband_username': couple_user.husband.username if couple_user else '',  # パパのユーザー名
+            'wife_username': couple_user.wife.username if couple_user else '',  # ママのユーザー名
         }
+
         form = CoupleRegistrationForm(initial=initial_data)
         registration_disabled = True  # 紐づけが既に存在する場合は登録ボタンを無効にする
     except CoupleUser.DoesNotExist:
