@@ -39,10 +39,10 @@
         form {
             display: flex;
             justify-content: center;
-            align-items: flex-start; 
+            align-items: flex-start;
             flex-direction: column;
             width: 100%;
-            max-width: 400px; 
+            max-width: 400px;
             margin: 0 auto;
             margin-bottom: 20px;
         }
@@ -50,7 +50,7 @@
         form label {
             text-align: left;
             margin-bottom: 5px;
-            color: #555; 
+            color: #555;
         }
 
         input[type="text"],
@@ -61,39 +61,39 @@
             padding: 8px;
             margin-bottom: 10px;
             box-sizing: border-box;
-            border: 1px solid #ccc; 
-            border-radius: 5px; 
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
         button {
             width: 100%;
             height: 35px;
-            background-color: #4285f4; 
+            background-color: #4285f4;
             color: #fff;
             border: none;
             cursor: pointer;
-            border-radius: 5px; 
-            margin-bottom: 0px; 
-            text-decoration: none; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
+            border-radius: 5px;
+            margin-bottom: 0px;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         button:hover {
-            background-color: #0056b3; 
+            background-color: #0056b3;
         }
 
         .btn-group {
             margin-top: 10px;
             display: flex;
             align-items: center;
-            width: 100%; 
+            width: 100%;
         }
 
         .btn-group button,
         .btn-group a {
-            flex-grow: 1; 
+            flex-grow: 1;
             text-decoration: none;
             display: flex;
             justify-content: center;
@@ -102,19 +102,28 @@
 
         .btn-secondary {
             height: 35px;
-            flex-grow: 0; 
-            width: 400px; 
+            flex-grow: 0;
+            width: 400px;
             background-color: #ccc;
             color: #333;
             border: none;
             cursor: pointer;
             border-radius: 5px;
             margin-top: 0px;
-            
+
         }
 
         .btn-secondary:hover {
             background-color: #999;
+        }
+
+        .has-error {
+            margin-left: 0; 
+        }
+
+        .has-error ul {
+            list-style-type: none;
+            padding-left: 0;
         }
     </style>
 </head>
@@ -139,37 +148,37 @@
         <!-- タイトル -->
        <label for="{{ form.title.id_for_label }}">タイトル</label>
        {{ form.title }}
-       <span style="color: red;" class="has-error">{{ form.title.errors }}</span>  <!-- 赤色に変更 -->
+       <span style="color: red;" class="has-error">{{ form.title.errors }}</span>  
 
        <!-- 説明 -->
        <label for="{{ form.description.id_for_label }}">説明</label>
        {{ form.description }}
-       <span style="color: red;" class="has-error">{{ form.description.errors }}</span>  <!-- 赤色に変更 -->
+       <span style="color: red;" class="has-error">{{ form.description.errors }}</span>  
 
        <!-- 締切日時 -->
        <label for="{{ form.deadline.id_for_label }}">締切日時</label>
        {{ form.deadline }}
-       <span style="color: red;" class="has-error">{{ form.deadline.errors }}</span>  <!-- 赤色に変更 -->
+       <span style="color: red;" class="has-error">{{ form.deadline.errors }}</span>  
 
        <!-- 作成者 -->
        <label for="{{ form.creator_user.id_for_label }}">作成者</label>
        {{ form.creator_user }}
-       <span style="color: red;" class="has-error">{{ form.creator_user.errors }}</span>  <!-- 赤色に変更 -->
+       <span style="color: red;" class="has-error">{{ form.creator_user.errors }}</span>  
 
        <!-- 担当者 -->
        <label for="{{ form.assignment_user.id_for_label }}">担当者</label>
        {{ form.assignment_user }}
-       <span style="color: red;" class="has-error">{{ form.assignment_user.errors }}</span>  <!-- 赤色に変更 -->
+       <span style="color:" class="has-error">{{ form.assignment_user.errors }}</span>  
 
        <!-- 完了予定日時 -->
        <label for="{{ form.complete_at.id_for_label }}">完了予定日時</label>
        {{ form.complete_at }}
-       <span style="color: red; display: block;" class="has-error">{{ form.complete_at.errors }}</span>  <!-- 赤色に変更 + ブロック要素に変更 -->
+       <span style="color: red;" class="has-error">{{ form.complete_at.errors }}</span>  
 
        <!-- 進捗状況 -->
        <label for="{{ form.status.id_for_label }}">進捗状況</label>
        {{ form.status }}
-       <span style="color: red;" class="has-error">{{ form.status.errors }}</span>  <!-- 赤色に変更 -->
+       <span style="color: red;" class="has-error">{{ form.status.errors }}</span>  
 
         <div class="btn-group">
            <button type="submit" class="btn btn-primary">保存</button>

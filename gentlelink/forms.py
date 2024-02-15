@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import Tasks, Memos, UserSettings, CoupleUser
 from django.utils import timezone
+from django.db.models import Q
 
 
 class CreateTaskForm(forms.Form):
@@ -27,7 +28,7 @@ class CreateTaskForm(forms.Form):
         deadline = self.cleaned_data.get('deadline')
 
         if deadline and deadline < timezone.now():
-            raise ValidationError("締切日は過去の日付にすることはできません。")
+            raise ValidationError("締切日時を過去に指定することは出来ません。")
 
         return deadline
 
@@ -35,7 +36,7 @@ class CreateTaskForm(forms.Form):
         complete_at = self.cleaned_data.get('complete_at')
 
         if complete_at and complete_at < timezone.now():
-            raise ValidationError("完了予定日は過去の日付にすることはできません。")
+            raise ValidationError("完了予定日時を過去に指定することは出来ません。")
 
         return complete_at
     
@@ -57,35 +58,47 @@ class CreateTaskForm(forms.Form):
 class EditTaskForm(forms.ModelForm):
     deadline = forms.DateTimeField(label='締切', widget=forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
     complete_at = forms.DateTimeField(label='完了予定日時', widget=forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}))
+    STATUS_CHOICES = [
+        ('incomplete', '未完了'),
+        ('complete', '完了'),
+    ]
 
+    status = forms.ChoiceField(label='進捗状況', choices=STATUS_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}))
+    
     def __init__(self, *args, **kwargs):
         linked_user = kwargs.pop('linked_user', None)
         login_user = kwargs.pop('login_user', None)
-
+        
         super(EditTaskForm, self).__init__(*args, **kwargs)
 
-        # creator_userのクエリセットをログインユーザーのみに制限
-        self.fields['creator_user'].queryset = User.objects.filter(id=self.instance.creator_user.id)
+        # ログインユーザーとその関連ユーザーのみを選択肢とする
+        assignment_user_queryset = User.objects.none()
 
-        # assignment_userのクエリセットをログインユーザーと紐づいたユーザーのみに制限
-        assignment_user_queryset = User.objects.filter(
-            id__in=[self.instance.creator_user.id, self.instance.assignment_user.id]
-        )
-
-        # フォームに紐づけられたユーザーを追加
-        if linked_user and linked_user != self.instance.creator_user:
-            assignment_user_queryset |= User.objects.filter(id=linked_user.id)
-
-        # ログインユーザーもクエリセットに追加
-        if login_user and login_user != self.instance.creator_user and login_user != linked_user:
-            assignment_user_queryset |= User.objects.filter(id=login_user.id)
-
-        # ログインユーザーが担当者である場合、紐づけられたユーザーも選択肢に追加
-        if self.instance.assignment_user == login_user:
-            if linked_user and linked_user != self.instance.creator_user and linked_user != login_user:
-                assignment_user_queryset |= User.objects.filter(id=linked_user.id)
+        if login_user:
+            user_ids = [login_user.id]
+            user_ids += CoupleUser.objects.filter(husband=login_user).values_list('wife_id', flat=True)
+            user_ids += CoupleUser.objects.filter(wife=login_user).values_list('husband_id', flat=True)
+            assignment_user_queryset = User.objects.filter(id__in=user_ids)
 
         self.fields['assignment_user'].queryset = assignment_user_queryset
+
+        # タスクの情報を初期値として設定
+        if 'instance' in kwargs:
+            task = kwargs['instance']
+            self.fields['status'].initial = task.status
+
+    def clean_deadline(self):
+        deadline = self.cleaned_data.get('deadline')
+        if deadline and deadline < timezone.now():
+            raise forms.ValidationError("締切日時を過去に指定することは出来ません。")
+        return deadline
+
+    def clean_complete_at(self):
+        complete_at = self.cleaned_data.get('complete_at')
+        if complete_at and complete_at < timezone.now():
+            raise forms.ValidationError("完了予定日時を過去に指定することは出来ません。")
+        return complete_at
+
     class Meta:
         model = Tasks
         fields = ['title', 'description', 'deadline', 'creator_user', 'assignment_user', 'complete_at', 'status']
@@ -93,7 +106,7 @@ class EditTaskForm(forms.ModelForm):
             'deadline': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'complete_at': forms.TextInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
         }
-
+        
 class TaskSearchForm(forms.Form):
     search_keyword = forms.CharField(label='検索ワード', required=False)       
 
@@ -126,6 +139,10 @@ class CoupleRegistrationForm(forms.Form):
     husband_username = forms.CharField(label='パパのユーザー名')
     wife_username = forms.CharField(label='ママのユーザー名')
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)  # ログインユーザーを取得
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         cleaned_data = super().clean()
         husband_username = cleaned_data.get('husband_username')
@@ -138,11 +155,30 @@ class CoupleRegistrationForm(forms.Form):
         except User.DoesNotExist:
             raise forms.ValidationError('指定されたユーザーが存在しません。')
 
+        # ログインユーザーがパパまたはママのユーザー名に含まれているか確認
+        if self.user.username not in [husband_username, wife_username]:
+            raise forms.ValidationError('どちらかに自分のユーザー名を入力してください。')
+
+        # 同一アカウントでないことを確認
+        if husband_username == wife_username:
+            raise forms.ValidationError('同一のアカウントは紐づけすることが出来ません。')
+        
         # CoupleUserを介して夫婦関係を確認
         if CoupleUser.objects.filter(husband=husband_user).exists() or CoupleUser.objects.filter(wife=wife_user).exists():
-            raise forms.ValidationError('選択されたユーザーは既に夫婦として登録されています。')
+            raise forms.ValidationError('相手ユーザーは既に他ユーザーと紐づけされています。')
 
+        # すでに他のユーザーと紐づけされているか確認
+        if CoupleUser.objects.exclude(Q(husband=husband_user) | Q(wife=wife_user)).filter(
+            Q(husband=husband_user) | Q(wife=wife_user)
+        ).exists():
+            raise forms.ValidationError('相手のアカウントは既に他のアカウントと紐づけされています。')
+
+         # 相手ユーザーがパパまたはママとして他ユーザーと紐づけされている場合はエラー
+        if CoupleUser.objects.filter(husband=wife_user).exists() or CoupleUser.objects.filter(wife=husband_user).exists():
+            raise forms.ValidationError('相手ユーザーは既に他ユーザーと紐づけされています。')
+        
         return cleaned_data
+    
 class EditMemoForm(forms.ModelForm):
     class Meta:
         model = Memos

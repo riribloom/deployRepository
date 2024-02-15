@@ -84,6 +84,12 @@
         .delete-btn:hover {
             background-color: #c82333;
         }
+
+        .text-danger {
+            color: red;
+            white-space: nowrap;
+            margin-top: 50px;
+        }
         
     </style>
 </head>
@@ -107,10 +113,12 @@
     <p>{{ form.husband_username }}</p>
     <p><label for="{{ form.wife_username.id_for_label }}">ママのユーザー名:</label></p>
     {{ form.wife_username }}
+    <!-- エラーメッセージ表示 -->
+    {% for error in form.non_field_errors %}
+        <p class="text-danger">{{ error }}</p>
+    {% endfor %}
     <br><button type="submit" style="background-color: #4285f4; color: #fff;">登録</button></br>
 {% endif %}
-
-
 
 </form>
 

@@ -119,6 +119,15 @@
         .button-spacing {
             margin-top: 10px;
 }
+        .has-error {
+            margin-left: 0; 
+        }
+
+        .has-error ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
     </style>
 </head>
 <body>
@@ -132,33 +141,53 @@
 
     <form method="post" action="{% url 'edit_task' task.id %}">
     {% csrf_token %}
+
     <label for="{{ form.title.id_for_label }}">タイトル</label>
     {{ form.title }}
+    {% if form.title.errors %}
+        <span style="color: red;" class="has-error;">{{ form.title.errors }}</span>
+    {% endif %}
+
     <label for="{{ form.description.id_for_label }}">説明</label>
     {{ form.description }}
+    {% if form.description.errors %}
+        <span style="color: red;" class="has-error;">{{ form.description.errors }}</span>
+    {% endif %}
+
     <label for="{{ form.deadline.id_for_label }}">締切日時</label>
-    <input type="datetime-local" class="form-control" name="{{ form.deadline.name }}" value="{{ form.deadline.value|default:task.deadline|date:'Y-m-d\TH:i' }}">
+    {{ form.deadline }}
+    {% if form.deadline.errors %}
+        <span style="color: red;" class="has-error;">{{ form.deadline.errors }}</span>
+    {% endif %}
+
     <label for="{{ form.creator_user.id_for_label }}">作成者</label>
     {{ form.creator_user }}
+    {% if form.creator_user.errors %}
+        <span style="color: red;" class="has-error;">{{ form.creator_user.errors }}</span>
+    {% endif %}
+
     <label for="{{ form.assignment_user.id_for_label }}">担当者</label>
     {{ form.assignment_user }}
+    {% if form.assignment_user.errors %}
+        <span style="color: red;" class="has-error;">{{ form.assignment_user.errors }}</span>
+    {% endif %}
+
     <label for="{{ form.complete_at.id_for_label }}">完了予定日時</label>
-    <input type="datetime-local" class="form-control" name="{{ form.complete_at.name }}" value="{{ form.complete_at.value|default:task.complete_at|date:'Y-m-d\TH:i' }}">
+    {{ form.complete_at }}
+    {% if form.complete_at.errors %}
+        <span style="color: red;" class="has-error;">{{ form.complete_at.errors }}</span>
+    {% endif %}
+
     <label for="{{ form.status.id_for_label }}">進捗状況</label>
-<select class="form-control" name="{{ form.status.name }}">
-    <option value="未完了" {% if form.status.value == '未完了' %}selected{% endif %}>未完了</option>
-    <option value="完了" {% if form.status.value == '完了' %}selected{% endif %}>完了</option>
-</select>
+    {{ form.status }}
+    {% if form.status.errors %}
+        <span style="color: red;" class="has-error;">{{ form.status.errors }}</span>
+    {% endif %}
 
     <div class="btn-group">
         <button type="submit">保存</button>
         <a href="{% url 'task_detail' task.id %}" class="btn btn-secondary">戻る</a>
     </div>
-    {% if form.errors %}
-        <div class="alert alert-danger" role="alert">
-            <strong>エラー:</strong> フォームに誤りがあります。
-        </div>
-    {% endif %}
 </form>
 </div>
 

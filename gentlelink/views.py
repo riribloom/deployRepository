@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .forms import CreateTaskForm, EditTaskForm, TaskSearchForm, MemoForm, UserSettingsForm, CustomPasswordChangeForm, CoupleRegistrationForm
 from .models import Tasks, Memos, Calendars, UserSettings, TaskShares, CoupleUser
-from datetime import date
+from datetime import datetime
 from django.urls import reverse
 from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
@@ -16,6 +16,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.utils import timezone
 import re
+from django.utils.dateparse import parse_datetime
+from django.utils.translation import gettext_lazy as _
+
 
 def welcome_view(request):
     return render(request, 'welcome.html')
@@ -189,23 +192,33 @@ def task_detail_view(request, task_id):
 @login_required
 def edit_task_view(request, task_id):
     task = get_object_or_404(Tasks, id=task_id)
+    login_user = request.user
 
     if request.method == 'POST':
-        form = EditTaskForm(request.POST, instance=task)
+        form = EditTaskForm(request.POST, instance=task, login_user=login_user)
         if form.is_valid():
+            # 進捗状況のフィールドを日本語に変換
+            progress = form.cleaned_data['status']
+            if progress == 'incomplete':
+                form.instance.status = _('未完了')
+            elif progress == 'complete':
+                form.instance.status = _('完了')
+
             form.save()
+            messages.success(request, 'タスクが正常に更新されました。')
             return redirect('task_detail', task_id)
     else:
-        # GET リクエスト時にデータベースの値をフォームに設定
-        # 紐づけられたユーザーとログインユーザーを取得
-        linked_user = task.assignment_user
-        login_user = request.user
+        # ログインユーザーとその関連ユーザーのみを選択肢とするユーザークエリセットを作成
+        user_ids = [login_user.id]
+        user_ids += CoupleUser.objects.filter(husband=login_user).values_list('wife_id', flat=True)
+        user_ids += CoupleUser.objects.filter(wife=login_user).values_list('husband_id', flat=True)
+        user_queryset = User.objects.filter(id__in=user_ids)
 
-        # フォームに紐づけられたユーザーとログインユーザーを渡す
-        form = EditTaskForm(instance=task, linked_user=linked_user, login_user=login_user)
+        # フォームの初期化時にユーザークエリセットを渡す
+        form = EditTaskForm(instance=task, login_user=login_user)
+        form.fields['creator_user'].queryset = user_queryset
 
     return render(request, 'edit_task.html', {'form': form, 'task': task})
-
 
 @login_required
 def task_search_view(request):
@@ -400,7 +413,7 @@ def couple_registration_view(request):
         registration_disabled = False
 
     if request.method == 'POST':
-        form = CoupleRegistrationForm(request.POST)
+        form = CoupleRegistrationForm(request.POST, user=request.user)
         if form.is_valid():
             husband_username = form.cleaned_data['husband_username']
             wife_username = form.cleaned_data['wife_username']
